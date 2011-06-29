@@ -47,14 +47,14 @@ var ready = function () {
   }
       
   function win() {
-    console.log("Listening for tags with mime type "+ tagMimeType);
+    console.log("Listening for tags with mime type "+ mimeType);
   }
   
   function fail() {
-    alert('Failed to register mime type ' + tagMimeType + ' with NFC');
+    alert('Failed to register mime type ' + mimeType + ' with NFC');
   }
   
-  window.plugins.NdefPlugin.addMimeTypeListener(tagMimeType, onNfc, win, fail);
+  window.plugins.NdefPlugin.addMimeTypeListener(mimeType, onNfc, win, fail);
   // don't want this but need as a hack
   window.plugins.NdefPlugin.addNdefFormattableListener(function () { alert("This tag is formattable"); });
           
