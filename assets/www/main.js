@@ -35,7 +35,18 @@ function onNfc(nfcEvent) {
 
 function choose(text) {
     choice = text;
-    // TODO write choice as peer to peer message
+    var ndefMessage = [
+        Ndef.mimeMediaRecord("game/rockpaperscissors", Ndef.stringToBytes(choice))
+    ];
+    
+    window.plugins.NdefPlugin.p2p(
+        ndefMessage,
+        function () { 
+           navigator.notification.vibrate(100);
+        }, function () {
+           alert("Failed to share tag.");
+        }
+    );
 }
 
 var ready = function () {
