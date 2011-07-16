@@ -1,16 +1,23 @@
 /*global NdefPlugin, Ndef */
-var choice = null;
+var choice = null,
+    listening = false,
+    mimeType = "game/rockpaperscissors";
+
+function stop() {
+    navigator.nfc.unshareTag();
+    listening = false;
+    // TODO deselect button. blur doesn't work
+}
 
 function onNfc(nfcEvent) {
-  console.log(JSON.stringify(nfcEvent.tagData));
-
+  if (!listening) {
+      return;
+  }
+  
   var records = nfcEvent.tagData,
       opponentsChoice = Ndef.bytesToString(records[0].payload),
       result;
   
-  // If choice is null, prompt the user or wait for a choice, then determine the winner
-  
-  // TODO clean up logic, doesn't handle edge cases
   if (choice === opponentsChoice) {
       result = "tie";
   } else if (choice === "Rock" && opponentsChoice === "Scissors") {
@@ -24,22 +31,30 @@ function onNfc(nfcEvent) {
   }  
   
   if (result === "tie") {
-      alert("Tie! " + choice);
+      navigator.notification.alert(choice + " === " + opponentsChoice, stop, "Tie", "Meh");
   } else if (result === "win") {
-      alert("You WIN!  " + choice + " beats " + opponentsChoice); // TODO grammar for Scissors
+      navigator.notification.alert(message(choice, opponentsChoice), stop, "You Win!", "OK");      
   } else {
-      alert("You LOOSE!  " + opponentsChoice + " beats " + choice);      
+      navigator.notification.alert(message(opponentsChoice, choice), stop, "You Lose", "Bummer");
   }
   navigator.notification.vibrate(100);   
+}
+
+function message(win, lose) {
+    if (/s$/.test(win)) {
+        return win + " beat " + lose;
+    } else {
+        return win + " beats " + lose;
+    }
 }
 
 function choose(text) {
     choice = text;
     var ndefMessage = [
-        Ndef.mimeMediaRecord("game/rockpaperscissors", Ndef.stringToBytes(choice))
+        Ndef.mimeMediaRecord(mimeType, Ndef.stringToBytes(choice))
     ];
     
-    window.plugins.NdefPlugin.p2p(
+    navigator.nfc.shareTag(
         ndefMessage,
         function () { 
            navigator.notification.vibrate(100);
@@ -47,11 +62,11 @@ function choose(text) {
            alert("Failed to share tag.");
         }
     );
+    listening = true;
 }
 
 var ready = function () {
-  var mimeType = "game/rockpaperscissors", 
-      buttons = document.getElementsByTagName('button');
+  var buttons = document.getElementsByTagName('button');
   
   for (var i = 0; i < buttons.length; i++) {
       buttons[i].addEventListener("click", function () { choose(this.innerHTML); }, false);
@@ -65,12 +80,8 @@ var ready = function () {
     alert('Failed to register mime type ' + mimeType + ' with NFC');
   }
   
-  window.plugins.NdefPlugin.addMimeTypeListener(mimeType, onNfc, win, fail);
-  // don't want this but need as a hack
-  window.plugins.NdefPlugin.addNdefFormattableListener(function () { alert("This tag is formattable"); });
+  navigator.nfc.addMimeTypeListener(mimeType, onNfc, win, fail);
           
 };
 
-// deviceready is being called before the plugins finish initializing
-// add setTimeout as a kludge until the real problem is fixed
-document.addEventListener('deviceready', function () { window.setTimeout(ready, 500); }, false);
+document.addEventListener('deviceready', ready, false);
