@@ -16,7 +16,7 @@ function onNfc(nfcEvent) {
 
   var tag = nfcEvent.tag,
       records = tag.ndefMessage,
-      opponentsChoice = Ndef.bytesToString(records[0].payload),
+      opponentsChoice = navigator.nfc.util.bytesToString(records[0].payload),
       result;
   
   if (choice === opponentsChoice) {
