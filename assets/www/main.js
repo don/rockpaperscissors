@@ -52,7 +52,7 @@ function message(win, lose) {
 function choose(text) {
     choice = text;
     var ndefMessage = [
-        Ndef.mimeMediaRecord(mimeType, Ndef.stringToBytes(choice))
+        Ndef.mimeMediaRecord(mimeType, navigator.nfc.util.stringToBytes(choice))
     ];
     
     navigator.nfc.shareTag(
