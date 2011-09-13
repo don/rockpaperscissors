@@ -4,7 +4,7 @@ var choice = null,
     mimeType = "game/rockpaperscissors";
 
 function stop() {
-    navigator.nfc.unshareTag();
+    nfc.unshare();
     listening = false;
     // TODO deselect button. blur doesn't work
 }
@@ -16,7 +16,7 @@ function onNfc(nfcEvent) {
 
   var tag = nfcEvent.tag,
       records = tag.ndefMessage,
-      opponentsChoice = Ndef.bytesToString(records[0].payload),
+      opponentsChoice = nfc.bytesToString(records[0].payload),
       result;
   
   if (choice === opponentsChoice) {
@@ -52,10 +52,10 @@ function message(win, lose) {
 function choose(text) {
     choice = text;
     var ndefMessage = [
-        Ndef.mimeMediaRecord(mimeType, Ndef.stringToBytes(choice))
+        ndef.mimeMediaRecord(mimeType, nfc.stringToBytes(choice))
     ];
     
-    navigator.nfc.shareTag(
+    nfc.share(
         ndefMessage,
         function () { 
            navigator.notification.vibrate(100);
@@ -81,7 +81,7 @@ var ready = function () {
     alert('Failed to register mime type ' + mimeType + ' with NFC');
   }
   
-  navigator.nfc.addMimeTypeListener(mimeType, onNfc, win, fail);
+  nfc.addMimeTypeListener(mimeType, onNfc, win, fail);
           
 };
 
